@@ -75,6 +75,10 @@ class StochasticFluxPipeline():
         
         self.pipe = FluxPipeline.from_pretrained(model_id, torch_dtype=torch.bfloat16).to(self.device)
 
+        # Compile transformer for faster inference
+        self.pipe.transformer = torch.compile(self.pipe.transformer, mode="default")
+        self.pipe.vae = torch.compile(self.pipe.vae, mode="default")
+
         # Save VRAM
         if self.cfg.save_vram:
             self.pipe.vae.eval().requires_grad_(False)

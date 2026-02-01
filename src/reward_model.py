@@ -277,8 +277,8 @@ class LayoutToImageReward(nn.Module):
         return inter / (union + 1e-6)
 
 
-@register_reward_model(name="t2icount")
-class T2ICountReward(nn.Module):
+@register_reward_model(name="quantity_aware")
+class QuantityAwareReward(nn.Module):
     @ignore_kwargs
     @dataclass
     class Config:
@@ -341,7 +341,7 @@ class T2ICountReward(nn.Module):
                 attn_mask
             )[0]
 
-            pred = torch.sum(output) / 60.0
+            pred = output.sum(dim=(1, 2, 3)) / 60.0  # (B,) - preserve batch dim
 
             # Aggregate predicted counts per batch.
             pred_counts.append(pred.item())

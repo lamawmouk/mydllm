@@ -16,3 +16,7 @@ tensorboard
 scipy
 numba
 einops
+lightning
+taming-transformers-rom1504
+git+https://github.com/openai/CLIP.git@main#egg=clip
+kornia

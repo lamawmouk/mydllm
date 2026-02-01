@@ -153,15 +153,17 @@ class SMC():
             # Logging ############################################
                 
             if ess.item() < self.cfg.ess_threshold * cur_num_particles:
-                # SSP Resmampling
+                # SSP Resampling: reset weights and resample particles
                 ancestor_idx = torch.from_numpy(ssp(W=np.array(normalized_weights.cpu()), M=next_num_particles)).to(latents.device)
-
                 prev_weights = torch.zeros_like(cur_weights)
 
-            latents = latents[ancestor_idx]
-            vel_pred = vel_pred[ancestor_idx]
-            cur_reward_values = cur_reward_values[ancestor_idx]
-            cur_grad_reward = cur_grad_reward[ancestor_idx]
+                latents = latents[ancestor_idx]
+                vel_pred = vel_pred[ancestor_idx]
+                cur_reward_values = cur_reward_values[ancestor_idx]
+                cur_grad_reward = cur_grad_reward[ancestor_idx]
+            else:
+                # No resampling: keep current weights
+                prev_weights = cur_weights
 
             latents, mu, sigma = pipe.step(latents, t, dt, vel_pred, return_mu_sigma=True)
             latents = latents + sigma ** 2 * cur_grad_reward / self.cfg.alpha * self.cfg.grad_scale

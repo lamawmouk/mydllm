@@ -42,6 +42,9 @@ class StrictStdoutSuppressor:
         self.original_stdout.flush()
         self.original_stderr.flush()
 
+    def isatty(self):
+        return getattr(self.original_stdout, "isatty", lambda: False)()
+
 def print_my(*args, **kwargs):
     msg = ' '.join(str(arg) for arg in args)
     sys.__stdout__.write(msg + '\n')  

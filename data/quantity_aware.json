@@ -1,0 +1,362 @@
+{
+  "0": {
+    "prompt": "coffee beans",
+    "items": [
+      {
+        "count": 2,
+        "prompt": "coffee beans"
+      }
+    ]
+  },
+  "1": {
+    "prompt": "rubies",
+    "items": [
+      {
+        "count": 5,
+        "prompt": "rubies"
+      }
+    ]
+  },
+  "2": {
+    "prompt": "strawberries",
+    "items": [
+      {
+        "count": 37,
+        "prompt": "strawberries"
+      }
+    ]
+  },
+  "3": {
+    "prompt": "dumplings",
+    "items": [
+      {
+        "count": 1,
+        "prompt": "dumplings"
+      }
+    ]
+  },
+  "4": {
+    "prompt": "eggs",
+    "items": [
+      {
+        "count": 17,
+        "prompt": "eggs"
+      }
+    ]
+  },
+  "5": {
+    "prompt": "blueberries",
+    "items": [
+      {
+        "count": 82,
+        "prompt": "blueberries"
+      }
+    ]
+  },
+  "6": {
+    "prompt": "olives",
+    "items": [
+      {
+        "count": 63,
+        "prompt": "olives"
+      }
+    ]
+  },
+  "7": {
+    "prompt": "cherries",
+    "items": [
+      {
+        "count": 28,
+        "prompt": "cherries"
+      }
+    ]
+  },
+  "8": {
+    "prompt": "coins",
+    "items": [
+      {
+        "count": 7,
+        "prompt": "coins"
+      }
+    ]
+  },
+  "9": {
+    "prompt": "grapes",
+    "items": [
+      {
+        "count": 22,
+        "prompt": "grapes"
+      }
+    ]
+  },
+  "10": {
+    "prompt": "buttons",
+    "items": [
+      {
+        "count": 11,
+        "prompt": "buttons"
+      }
+    ]
+  },
+  "11": {
+    "prompt": "mochi",
+    "items": [
+      {
+        "count": 14,
+        "prompt": "mochi"
+      }
+    ]
+  },
+  "12": {
+    "prompt": "acorns",
+    "items": [
+      {
+        "count": 14,
+        "prompt": "acorns"
+      }
+    ]
+  },
+  "13": {
+    "prompt": "billiard balls",
+    "items": [
+      {
+        "count": 10,
+        "prompt": "billiard balls"
+      }
+    ]
+  },
+  "14": {
+    "prompt": "apples",
+    "items": [
+      {
+        "count": 3,
+        "prompt": "apples"
+      }
+    ]
+  },
+  "15": {
+    "prompt": "tomatoes",
+    "items": [
+      {
+        "count": 25,
+        "prompt": "tomatoes"
+      }
+    ]
+  },
+  "16": {
+    "prompt": "lychees",
+    "items": [
+      {
+        "count": 11,
+        "prompt": "lychees"
+      }
+    ]
+  },
+  "17": {
+    "prompt": "cake pops",
+    "items": [
+      {
+        "count": 14,
+        "prompt": "cake pops"
+      }
+    ]
+  },
+  "18": {
+    "prompt": "potatoes",
+    "items": [
+      {
+        "count": 18,
+        "prompt": "potatoes"
+      }
+    ]
+  },
+  "19": {
+    "prompt": "stickers",
+    "items": [
+      {
+        "count": 10,
+        "prompt": "stickers"
+      }
+    ]
+  },
+  "20": {
+    "prompt": "coffee beans",
+    "items": [
+      {
+        "count": 62,
+        "prompt": "coffee beans"
+      }
+    ]
+  },
+  "21": {
+    "prompt": "rubies",
+    "items": [
+      {
+        "count": 24,
+        "prompt": "rubies"
+      }
+    ]
+  },
+  "22": {
+    "prompt": "strawberries",
+    "items": [
+      {
+        "count": 26,
+        "prompt": "strawberries"
+      }
+    ]
+  },
+  "23": {
+    "prompt": "dumplings",
+    "items": [
+      {
+        "count": 14,
+        "prompt": "dumplings"
+      }
+    ]
+  },
+  "24": {
+    "prompt": "eggs",
+    "items": [
+      {
+        "count": 8,
+        "prompt": "eggs"
+      }
+    ]
+  },
+  "25": {
+    "prompt": "blueberries",
+    "items": [
+      {
+        "count": 55,
+        "prompt": "blueberries"
+      }
+    ]
+  },
+  "26": {
+    "prompt": "olives",
+    "items": [
+      {
+        "count": 42,
+        "prompt": "olives"
+      }
+    ]
+  },
+  "27": {
+    "prompt": "cherries",
+    "items": [
+      {
+        "count": 34,
+        "prompt": "cherries"
+      }
+    ]
+  },
+  "28": {
+    "prompt": "coins",
+    "items": [
+      {
+        "count": 33,
+        "prompt": "coins"
+      }
+    ]
+  },
+  "29": {
+    "prompt": "grapes",
+    "items": [
+      {
+        "count": 42,
+        "prompt": "grapes"
+      }
+    ]
+  },
+  "30": {
+    "prompt": "buttons",
+    "items": [
+      {
+        "count": 4,
+        "prompt": "buttons"
+      }
+    ]
+  },
+  "31": {
+    "prompt": "mochi",
+    "items": [
+      {
+        "count": 20,
+        "prompt": "mochi"
+      }
+    ]
+  },
+  "32": {
+    "prompt": "acorns",
+    "items": [
+      {
+        "count": 24,
+        "prompt": "acorns"
+      }
+    ]
+  },
+  "33": {
+    "prompt": "billiard balls",
+    "items": [
+      {
+        "count": 13,
+        "prompt": "billiard balls"
+      }
+    ]
+  },
+  "34": {
+    "prompt": "apples",
+    "items": [
+      {
+        "count": 25,
+        "prompt": "apples"
+      }
+    ]
+  },
+  "35": {
+    "prompt": "tomatoes",
+    "items": [
+      {
+        "count": 22,
+        "prompt": "tomatoes"
+      }
+    ]
+  },
+  "36": {
+    "prompt": "lychees",
+    "items": [
+      {
+        "count": 22,
+        "prompt": "lychees"
+      }
+    ]
+  },
+  "37": {
+    "prompt": "cake pops",
+    "items": [
+      {
+        "count": 12,
+        "prompt": "cake pops"
+      }
+    ]
+  },
+  "38": {
+    "prompt": "potatoes",
+    "items": [
+      {
+        "count": 5,
+        "prompt": "potatoes"
+      }
+    ]
+  },
+  "39": {
+    "prompt": "stickers",
+    "items": [
+      {
+        "count": 19,
+        "prompt": "stickers"
+      }
+    ]
+  }
+}

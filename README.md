@@ -7,7 +7,6 @@
 
 ![teaser](assets/teaser.png)
 
-
 <p align="center">
   <a href="https://arxiv.org/abs/2506.01320">
     <img src="https://img.shields.io/badge/arXiv-2506.01320-red" alt="arXiv 2506.01320" />
@@ -26,15 +25,19 @@
 </p>
 
 ## Introduction
+
 We propose **Ψ-Sampler**, an SMC-based framework that improves inference-time reward alignment in score-based generative models via efficient posterior initialization using the pCNL algorithm.
 
-[//]: # (### Abstract)
+[//]: # "### Abstract"
+
 > We introduce Ψ-Sampler, an SMC-based framework incorporating pCNL-based initial particle sampling for effective inference-time reward alignment with a score-based generative model. Inference-time reward alignment with score-based generative models has recently gained significant traction, following a broader paradigm shift from pre-training to post-training optimization. At the core of this trend is the application of Sequential Monte Carlo (SMC) to the denoising process. However, existing methods typically initialize particles from the Gaussian prior, which inadequately captures reward-relevant regions and results in reduced sampling efficiency. We demonstrate that initializing from the reward-aware posterior significantly improves alignment performance. To enable posterior sampling in high-dimensional latent spaces, we introduce the preconditioned Crank–Nicolson Langevin (pCNL) algorithm, which combines dimension-robust proposals with gradient-informed dynamics. This approach enables efficient and scalable posterior sampling and consistently improves performance across various reward alignment tasks, including layout-to-image generation, quantity-aware generation, and aesthetic-preference generation, as demonstrated in our experiments.
 
 <!-- Release Note -->
-### Release
-- **[03/12/25]** 🔥 We have released the implementation of _Ψ-Sampler: Initial Particle Sampling for SMC-Based Inference-Time Reward Alignment in Score-Based Generative Models_ for layout-to-image generation and aesthetic-preference generation. 
 
+### Release
+
+- **[02/02/25]** 🔥 We have released the implementation for quantity-aware generation.
+- **[03/12/25]** 🔥 We have released the implementation of _Ψ-Sampler: Initial Particle Sampling for SMC-Based Inference-Time Reward Alignment in Score-Based Generative Models_ for layout-to-image generation and aesthetic-preference generation.
 
 ### Setup
 
@@ -46,6 +49,7 @@ conda activate psi_sampler
 ```
 
 Clone this repository:
+
 ```
 git clone https://github.com/KAIST-Visual-AI-Group/Psi-Sampler.git
 cd Psi-Sampler
@@ -58,22 +62,22 @@ pip install torch==2.5.0 torchvision==0.20.0 torchaudio==2.5.0 --index-url https
 pip install -r requirements.txt
 ```
 
-
 ### Configuration:
-  - `--mcmc`  :  MCMC method (`mala`, `pcnl`)
-  - `--num_mcmc_steps`  :  Number of MCMC steps used for the initial particle sampling process
-  - `--num_chains`  :  Number of MCMC processes
-  - `--burn_in`  :  Number of initial samples to discard in the MCMC process
-  - `--alpha_mcmc`  :  Strength of KL regularization for the initial particle sampling process
-  - `--alpha`  :  Strength of KL regularizaiton for the subsequent SMC process
-  - `--num_particles`  :  Number of selected initial particles
-  - `--num_inference_steps`  :  Number of denoising steps in the generative process
-  - `--ess_threshold`  :  Minimum acceptable ratio for the Effective Sample Size (ESS)
+
+- `--mcmc` : MCMC method (`mala`, `pcnl`)
+- `--num_mcmc_steps` : Number of MCMC steps used for the initial particle sampling process
+- `--num_chains` : Number of MCMC processes
+- `--burn_in` : Number of initial samples to discard in the MCMC process
+- `--alpha_mcmc` : Strength of KL regularization for the initial particle sampling process
+- `--alpha` : Strength of KL regularizaiton for the subsequent SMC process
+- `--num_particles` : Number of selected initial particles
+- `--num_inference_steps` : Number of denoising steps in the generative process
+- `--ess_threshold` : Minimum acceptable ratio for the Effective Sample Size (ESS)
 
 ### Optional Flags:
-  - `--save_reward`  :  Display the reward value on the saved images.
-  - `--save_tweedies`  :  Save the step-wise particle tweedies for each MCMC and SMC process.
 
+- `--save_reward` : Display the reward value on the saved images.
+- `--save_tweedies` : Save the step-wise particle tweedies for each MCMC and SMC process.
 
 </details>
 
@@ -82,6 +86,7 @@ pip install -r requirements.txt
 We provide example data file for layout-to-image generation in `data/layout_to_image.json`. You can run layout-to-image generation using the following command.
 
 You may optionally override configuration values by specifying arguments directly in the command line:
+
 ```
 CUDA_VISIBLE_DEVICES={$DEVICE} python main.py --tag layout_to_image --config ./config/layout_to_image.yaml --data_path ./data/layout_to_image.json --save_dir ./results_layout_to_image --alpha_mcmc={$VALUE} --save_reward --save_tweedies
 ```
@@ -91,16 +96,26 @@ CUDA_VISIBLE_DEVICES={$DEVICE} python main.py --tag layout_to_image --config ./c
 We provide example data file for aesthetic-preference generation in `data/aesthetic.txt`. You can run aesthetic-preference generation using the following command.
 
 You may optionally override configuration values by specifying arguments directly in the command line:
+
 ```
 CUDA_VISIBLE_DEVICES={$DEVICE} python main.py --tag aesthetic --config ./config/aesthetic.yaml --data_path ./data/aesthetic.txt --save_dir ./results_aesthetic --alpha_mcmc={$VALUE} --save_reward --save_tweedies
 ```
 
 ### Quantity-Aware Generation
 
-Comming Soon!
+This task requires checkpoints from [T2ICount](https://github.com/cha15yq/T2ICount). Download the following files to `misc/t2icount/`:
 
+- [v1-5-pruned-emaonly.ckpt](https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/blob/main/v1-5-pruned-emaonly.ckpt)
+- [T2ICount checkpoint](https://drive.google.com/file/d/1lw5LgpYP7vTazaMWTgNa6nFoZ63j-st9/view)
 
-##  Citation
+You may optionally override configuration values by specifying arguments directly in the command line:
+
+```
+CUDA_VISIBLE_DEVICES={$DEVICE} python main.py --tag compile --config ./config/quantity_aware.yaml --data_path ./data/quantity_aware.json --save_dir ./results_quantity_aware --alpha_mcmc={$VALUE} --save_reward --save_tweedies
+```
+
+## Citation
+
 ```
 @article{yoon2025psi,
   title={Psi-Sampler: Initial Particle Sampling for SMC-Based Inference-Time Reward Alignment in Score Models},

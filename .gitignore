@@ -1,2 +1,5 @@
 .vscode/
 results*
+__pycache__/
+misc/t2icount/best_model_paper.pth
+misc/t2icount/v1-5-pruned-emaonly.ckpt
