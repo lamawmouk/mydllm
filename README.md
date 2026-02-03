@@ -36,7 +36,7 @@ We propose **Ψ-Sampler**, an SMC-based framework that improves inference-time r
 
 ### Release
 
-- **[02/02/25]** 🔥 We have released the implementation for quantity-aware generation.
+- **[02/02/25]** 🔢 We have released the implementation for quantity-aware generation.
 - **[03/12/25]** 🔥 We have released the implementation of _Ψ-Sampler: Initial Particle Sampling for SMC-Based Inference-Time Reward Alignment in Score-Based Generative Models_ for layout-to-image generation and aesthetic-preference generation.
 
 ### Setup
@@ -113,6 +113,10 @@ You may optionally override configuration values by specifying arguments directl
 ```
 CUDA_VISIBLE_DEVICES={$DEVICE} python main.py --tag compile --config ./config/quantity_aware.yaml --data_path ./data/quantity_aware.json --save_dir ./results_quantity_aware --alpha_mcmc={$VALUE} --save_reward --save_tweedies
 ```
+
+### Acknowledgement
+
+We borrow codes from [T2ICount](https://github.com/cha15yq/T2ICount) for quantity-aware generation. Many thanks to the authors for sharing their codes.
 
 ## Citation
 
