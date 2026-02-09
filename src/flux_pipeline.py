@@ -517,6 +517,99 @@ class StochasticFluxPipeline():
         return rewards, grads
 
 
+    def step_multi_candidate(self, latents, t, dt, vel_pred, M, grad_reward, eta, alpha):
+        """Generate M gradient-guided candidates per particle.
+
+        Args:
+            latents: [N, C, H, W] current particles
+            t: [N] current timesteps
+            dt: [N] timestep deltas
+            vel_pred: [N, C, H, W] velocity prediction
+            M: number of candidates per particle
+            grad_reward: [N, C, H, W] reward gradient at current state
+            eta: gradient guidance scale
+            alpha: KL regularization strength
+
+        Returns:
+            candidates: [N*M, C, H, W] all candidates (flattened for batch eval)
+            mu: [N, C, H, W] base transition mean (for weight correction)
+            mu_tilde: [N, C, H, W] gradient-shifted mean
+            sigma_dt: [N, 1, 1, 1] noise scale (diffuse_coeff * sqrt(dt))
+        """
+        assert torch.all(dt >= 0.0).item(), "dt must be positive"
+        N = latents.shape[0]
+
+        dt_r = dt.reshape(dt.shape[0], *(1,) * (latents.dim() - 1))
+        diffuse_coeff = self.get_diffuse_coefficient(t)
+        diffuse_coeff = diffuse_coeff.reshape(diffuse_coeff.shape[0], *(1,) * (latents.dim() - 1))
+        drift_coeff = self.get_drift_coefficient(latents, vel_pred, t, diffuse_coeff)
+
+        # Base transition mean (same as step())
+        mu = latents.to(torch.float32) + drift_coeff * dt_r
+        sigma_dt = diffuse_coeff * torch.sqrt(dt_r)  # [N, 1, 1, 1]
+
+        # Gradient-shifted mean
+        mu_tilde = mu + eta * sigma_dt ** 2 * grad_reward.to(torch.float32) / alpha
+
+        # Expand to M candidates: [N, 1, C, H, W] -> [N, M, C, H, W]
+        mu_tilde_expanded = mu_tilde.unsqueeze(1).expand(-1, M, *[-1] * (latents.dim() - 1))
+        sigma_dt_expanded = sigma_dt.unsqueeze(1).expand(-1, M, *[-1] * (latents.dim() - 1))
+
+        # Sample M candidates per particle
+        noise = torch.randn_like(mu_tilde_expanded)
+        candidates = mu_tilde_expanded + sigma_dt_expanded * noise  # [N, M, C, H, W]
+
+        # Reshape to [N*M, C, H, W] for batched evaluation
+        candidates = candidates.reshape(N * M, *latents.shape[1:]).to(self.pipe.dtype)
+
+        return candidates, mu.to(self.pipe.dtype), mu_tilde.to(self.pipe.dtype), sigma_dt.to(self.pipe.dtype)
+
+    def evaluate_and_select_candidates(self, candidates, reward_model, t, alpha, N, M):
+        """Evaluate Tweedie rewards for N*M candidates, select M→1 per particle.
+
+        Args:
+            candidates: [N*M, C, H, W] all candidate latents
+            reward_model: reward model instance
+            t: [N] current timesteps (will be expanded to N*M)
+            alpha: KL regularization strength
+            N: particle count
+            M: candidate count per particle
+
+        Returns:
+            selected: [N, C, H, W] one selected candidate per particle
+            selected_rewards: [N] rewards of selected candidates
+            log_q_selected: [N] log-prob of selection (for weight correction)
+            all_rewards: [N, M] all candidate rewards
+        """
+        # Expand timesteps for N*M candidates
+        t_expanded = t.repeat_interleave(M)
+
+        # Evaluate rewards for all candidates (no gradients needed for selection)
+        with torch.no_grad():
+            all_reward_values, _, _, _ = self.get_reward_grad_vel_tweedies(
+                candidates, reward_model, t_expanded, return_grad=False
+            )
+
+        # Reshape rewards to [N, M]
+        all_rewards = all_reward_values.reshape(N, M)
+
+        # Softmax reward-tilted selection
+        log_probs = torch.log_softmax(all_rewards / alpha, dim=1)  # [N, M]
+        probs = torch.exp(log_probs)
+
+        # Sample one candidate per particle
+        idx = torch.multinomial(probs, num_samples=1).squeeze(1)  # [N]
+
+        # Gather selected candidates
+        candidates_reshaped = candidates.reshape(N, M, *candidates.shape[1:])
+        selected = candidates_reshaped[torch.arange(N, device=candidates.device), idx]  # [N, C, H, W]
+
+        # Gather selected rewards and log-probs
+        selected_rewards = all_rewards[torch.arange(N, device=candidates.device), idx]  # [N]
+        log_q_selected = log_probs[torch.arange(N, device=candidates.device), idx]  # [N]
+
+        return selected, selected_rewards, log_q_selected, all_rewards
+
     def set_custom_call_function_for_MCMC(self, custom_call_function):
         assert self.init_sampling_method is not None, "Custom call function can only be set when using MCMC."
         self.init_sampling_method.custom_call_function = custom_call_function

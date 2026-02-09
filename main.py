@@ -8,6 +8,7 @@ import json
 from src.utils import *
 from src.flux_pipeline import StochasticFluxPipeline, TimeSampler
 from src.runner import *
+from src.rtp_runner import RTPSMC
 from src.reward_model import *
 from src.mcmc import pCNL
 
@@ -27,7 +28,11 @@ def main(main_cfg, CFG, args, task_name):
         time_sampler = TimeSampler(device, CFG)
         pipe = StochasticFluxPipeline(device, CFG)
         reward_model = get_reward_model(task_name)(torch.float32, device, args.save_dir, CFG)
-        SMC_runner = SMC(CFG)
+        method = getattr(CFG, "method", "smc")
+        if method == "rtp_smc":
+            SMC_runner = RTPSMC(CFG)
+        else:
+            SMC_runner = SMC(CFG)
 
     if args.data_path.endswith(".json"):
         dataset = json.load(open(args.data_path, 'r'))
