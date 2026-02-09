@@ -47,6 +47,10 @@ class RTPSMC():
         M: int = 4              # candidates per particle per step
         eta: float = 1.0        # gradient guidance scale for candidate generation
 
+        # Step-adaptive M schedule
+        adaptive_M: bool = False       # enable step-adaptive M
+        M_warmup_frac: float = 0.5    # fraction of steps to use M=1 (0.5 = first half)
+
     def __init__(self, CFG):
         self.cfg = self.Config(**CFG)
         self.particle_schedule = [self.cfg.num_particles] * self.cfg.num_inference_steps
@@ -98,9 +102,20 @@ class RTPSMC():
 
         assert cur_weights.ndim == 1, "Dimension of reward values should be 1D"
 
+        # Precompute step-adaptive M schedule
+        M_warmup_steps = int(self.cfg.M_warmup_frac * self.cfg.num_inference_steps) if self.cfg.adaptive_M else 0
+
         for step in tqdm(range(1, self.cfg.num_inference_steps + 1), desc="RTP-SMC Steps", leave=False):
             cur_num_particles = latents.shape[0]
             next_num_particles = self.particle_schedule[step - 1]
+
+            # Step-adaptive: M=1,eta=0 during warmup; M=M_max,eta=eta_max after
+            if self.cfg.adaptive_M and step <= M_warmup_steps:
+                step_M = 1
+                step_eta = 0.0
+            else:
+                step_M = M
+                step_eta = eta
 
             # Normalize weights for ESS computation
             lse = torch.logsumexp(cur_weights - cur_weights.max(), dim=0)
@@ -139,12 +154,12 @@ class RTPSMC():
 
             N = latents.shape[0]
 
-            if M > 1:
+            if step_M > 1:
                 # ---- GG-RTP-SMC: Multi-candidate with reward-tilted selection ----
 
                 # Generate M gradient-guided candidates per particle
                 candidates, mu, mu_tilde, sigma_dt = pipe.step_multi_candidate(
-                    latents, t, dt, vel_pred, M, cur_grad_reward, eta, self.cfg.alpha
+                    latents, t, dt, vel_pred, step_M, cur_grad_reward, step_eta, self.cfg.alpha
                 )
 
                 # Get next timestep for Tweedie evaluation
@@ -155,7 +170,7 @@ class RTPSMC():
 
                 # Evaluate and select candidates via softmax reward-tilted selection
                 selected, selected_rewards_from_candidates, log_q_selected, all_rewards = \
-                    pipe.evaluate_and_select_candidates(candidates, reward_model, t_next if step < self.cfg.num_inference_steps else t, self.cfg.alpha, N, M)
+                    pipe.evaluate_and_select_candidates(candidates, reward_model, t_next if step < self.cfg.num_inference_steps else t, self.cfg.alpha, N, step_M)
 
                 latents = selected
 
@@ -180,7 +195,7 @@ class RTPSMC():
 
                 # 1. Selection correction: log(1/M) - log(softmax(r_j/alpha))
                 #    = -log(M) - log_q_selected
-                selection_correction = -math.log(M) - log_q_selected  # [N]
+                selection_correction = -math.log(step_M) - log_q_selected  # [N]
 
                 # 2. Gradient shift correction: log p(x|mu) / q(x|mu_tilde)
                 shift_correction = self.pretrained_over_proposal(latents, mu, sigma_dt, cur_grad_reward)
