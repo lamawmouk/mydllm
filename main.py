@@ -94,6 +94,8 @@ if __name__ == "__main__":
     CFG = load_config(args.config, cli_args=extras)
 
     task_name = args.config.split("/")[-1].split(".")[0]
+    # Allow config to override task_name (e.g. rtp_layout -> layout_to_image)
+    task_name = getattr(CFG, "task_name", task_name)
     main_cfg = Config(**CFG)
 
     step_size = CFG.step_size

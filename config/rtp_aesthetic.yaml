@@ -72,6 +72,7 @@ grad_scale: 1.0
 # GG-RTP-SMC Config
 #####################################################
 method: rtp_smc
+task_name: aesthetic
 M: 4
 eta: 1.0
 
