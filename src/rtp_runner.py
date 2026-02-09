@@ -46,6 +46,7 @@ class RTPSMC():
         # GG-RTP-SMC specific
         M: int = 4              # candidates per particle per step
         eta: float = 1.0        # gradient guidance scale for candidate generation
+        greedy_selection: bool = False  # argmax instead of softmax (no weight correction)
 
         # Step-adaptive M schedule
         adaptive_M: bool = False       # enable step-adaptive M
@@ -168,9 +169,14 @@ class RTPSMC():
                 else:
                     t_next = t  # last step, use current t for evaluation
 
-                # Evaluate and select candidates via softmax reward-tilted selection
+                # Evaluate and select candidates
                 selected, selected_rewards_from_candidates, log_q_selected, all_rewards = \
-                    pipe.evaluate_and_select_candidates(candidates, reward_model, t_next if step < self.cfg.num_inference_steps else t, self.cfg.alpha, N, step_M)
+                    pipe.evaluate_and_select_candidates(
+                        candidates, reward_model,
+                        t_next if step < self.cfg.num_inference_steps else t,
+                        self.cfg.alpha, N, step_M,
+                        greedy=self.cfg.greedy_selection
+                    )
 
                 latents = selected
 
@@ -191,19 +197,17 @@ class RTPSMC():
                     else:
                         save_collage(decoded_tweedies, os.path.join(self.cfg.misc_dir, dir_name, f"{step:05d}.png"), resize=(256, 256), reward_values=next_reward_values)
 
-                # ---- Importance weight correction ----
-
-                # 1. Selection correction: log(1/M) - log(softmax(r_j/alpha))
-                #    = -log(M) - log_q_selected
-                selection_correction = -math.log(step_M) - log_q_selected  # [N]
-
-                # 2. Gradient shift correction: log p(x|mu) / q(x|mu_tilde)
-                shift_correction = self.pretrained_over_proposal(latents, mu, sigma_dt, cur_grad_reward)
-
-                # 3. Standard SOC reward incremental term
+                # ---- Weight update ----
                 reward_increment = (next_reward_values - cur_reward_values) / self.cfg.alpha
 
-                cur_weights = prev_weights + reward_increment + selection_correction + shift_correction
+                if self.cfg.greedy_selection:
+                    # Greedy mode: no importance weight correction, just reward increment
+                    cur_weights = prev_weights + reward_increment
+                else:
+                    # Full importance weight correction
+                    selection_correction = -math.log(step_M) - log_q_selected  # [N]
+                    shift_correction = self.pretrained_over_proposal(latents, mu, sigma_dt, cur_grad_reward)
+                    cur_weights = prev_weights + reward_increment + selection_correction + shift_correction
 
             else:
                 # ---- M=1 fallback: exactly Psi-Sampler behavior ----

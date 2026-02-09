@@ -564,7 +564,7 @@ class StochasticFluxPipeline():
 
         return candidates, mu.to(self.pipe.dtype), mu_tilde.to(self.pipe.dtype), sigma_dt.to(self.pipe.dtype)
 
-    def evaluate_and_select_candidates(self, candidates, reward_model, t, alpha, N, M):
+    def evaluate_and_select_candidates(self, candidates, reward_model, t, alpha, N, M, greedy=False):
         """Evaluate Tweedie rewards for N*M candidates, select M→1 per particle.
 
         Args:
@@ -574,11 +574,12 @@ class StochasticFluxPipeline():
             alpha: KL regularization strength
             N: particle count
             M: candidate count per particle
+            greedy: if True, use argmax selection (no importance weights needed)
 
         Returns:
             selected: [N, C, H, W] one selected candidate per particle
             selected_rewards: [N] rewards of selected candidates
-            log_q_selected: [N] log-prob of selection (for weight correction)
+            log_q_selected: [N] log-prob of selection (for weight correction, 0 if greedy)
             all_rewards: [N, M] all candidate rewards
         """
         # Expand timesteps for N*M candidates
@@ -593,20 +594,23 @@ class StochasticFluxPipeline():
         # Reshape rewards to [N, M]
         all_rewards = all_reward_values.reshape(N, M)
 
-        # Softmax reward-tilted selection
-        log_probs = torch.log_softmax(all_rewards / alpha, dim=1)  # [N, M]
-        probs = torch.exp(log_probs)
-
-        # Sample one candidate per particle
-        idx = torch.multinomial(probs, num_samples=1).squeeze(1)  # [N]
+        if greedy:
+            # Greedy argmax selection
+            idx = all_rewards.argmax(dim=1)  # [N]
+            log_q_selected = torch.zeros(N, device=candidates.device)
+        else:
+            # Softmax reward-tilted selection
+            log_probs = torch.log_softmax(all_rewards / alpha, dim=1)  # [N, M]
+            probs = torch.exp(log_probs)
+            idx = torch.multinomial(probs, num_samples=1).squeeze(1)  # [N]
+            log_q_selected = log_probs[torch.arange(N, device=candidates.device), idx]  # [N]
 
         # Gather selected candidates
         candidates_reshaped = candidates.reshape(N, M, *candidates.shape[1:])
         selected = candidates_reshaped[torch.arange(N, device=candidates.device), idx]  # [N, C, H, W]
 
-        # Gather selected rewards and log-probs
+        # Gather selected rewards
         selected_rewards = all_rewards[torch.arange(N, device=candidates.device), idx]  # [N]
-        log_q_selected = log_probs[torch.arange(N, device=candidates.device), idx]  # [N]
 
         return selected, selected_rewards, log_q_selected, all_rewards
 
